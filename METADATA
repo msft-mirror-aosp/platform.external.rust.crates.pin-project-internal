@@ -1,0 +1,19 @@
+name: "pin-project-internal"
+description: "An internal crate to support pin_project - do not use directly"
+third_party {
+  url {
+    type: HOMEPAGE
+    value: "https://crates.io/crates/pin-project-internal"
+  }
+  url {
+    type: GIT
+    value: "https://github.com/taiki-e/pin-project"
+  }
+  version: "0.4.16"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2020
+    month: 5
+    day: 11
+  }
+}

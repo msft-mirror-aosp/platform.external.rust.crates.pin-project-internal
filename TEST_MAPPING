@@ -1,0 +1,8 @@
+{
+  "presubmit": [
+    {
+      "name": "pin-project-internal_tests_pin_project_internal",
+      "host": true
+    }
+  ]
+}

@@ -5,7 +5,7 @@ rust_proc_macro {
     crate_name: "pin_project_internal",
     srcs: ["src/lib.rs"],
     edition: "2018",
-    rlibs: [
+    rustlibs: [
         // ERROR: unknown type of lib proc_macro
         "libproc_macro2",
         "libquote",
@@ -20,7 +20,7 @@ rust_test_host {
     test_suites: ["general-tests"],
     auto_gen_config: true,
     edition: "2018",
-    rlibs: [
+    rustlibs: [
         // ERROR: unknown type of lib proc_macro
         "libproc_macro2",
         "libquote",

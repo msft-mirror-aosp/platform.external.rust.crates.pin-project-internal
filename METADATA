@@ -9,11 +9,11 @@ third_party {
     type: GIT
     value: "https://github.com/taiki-e/pin-project"
   }
-  version: "0.4.17"
+  version: "0.4.22"
   license_type: NOTICE
   last_upgrade_date {
     year: 2020
-    month: 5
-    day: 18
+    month: 7
+    day: 10
   }
 }

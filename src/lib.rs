@@ -1,6 +1,6 @@
 //! An internal crate to support pin_project - **do not use directly**
 
-#![doc(html_root_url = "https://docs.rs/pin-project-internal/0.4.22")]
+#![doc(html_root_url = "https://docs.rs/pin-project-internal/0.4.23")]
 #![doc(test(
     no_crate_inject,
     attr(deny(warnings, rust_2018_idioms, single_use_lifetimes), allow(dead_code))
@@ -11,8 +11,6 @@
 // mem::take and #[non_exhaustive] requires Rust 1.40
 #![allow(clippy::mem_replace_with_default, clippy::manual_non_exhaustive)]
 #![allow(clippy::needless_doctest_main)]
-// https://github.com/rust-lang/rust-clippy/issues/5704
-#![allow(clippy::unnested_or_patterns)]
 
 // older compilers require explicit `extern crate`.
 #[allow(unused_extern_crates)]
@@ -134,7 +132,7 @@ use crate::utils::ProjKind;
 ///    contains the content is not overwritten or deallocated without calling
 ///    the content's destructors.
 ///
-///    Safe code doesn't need to worry about this - the only wait to violate
+///    Safe code doesn't need to worry about this - the only way to violate
 ///    this requirement is to manually deallocate memory (which is `unsafe`),
 ///    or to overwrite a field with something else.
 ///    Because your custom destructor takes [`Pin`]`<&mut MyStruct>`, it's

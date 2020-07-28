@@ -909,8 +909,7 @@ impl<'a> Context<'a> {
                 }
             }
             UnpinImpl::Default => {
-                let mut full_where_clause =
-                    self.orig.generics.where_clause.as_ref().cloned().unwrap();
+                let mut full_where_clause = self.orig.generics.where_clause.clone().unwrap();
 
                 // Generate a field in our new struct for every
                 // pinned field in the original type.
@@ -974,7 +973,7 @@ impl<'a> Context<'a> {
                     // this 'public' type by creating this type in the inside of `const`.
                     #vis struct #struct_ident #proj_generics #where_clause {
                         __pin_project_use_generics: ::pin_project::__private::AlwaysUnpin<
-                            #lifetime, (#(#type_params),*)
+                            #lifetime, (#(::pin_project::__private::PhantomData<#type_params>),*)
                         >,
 
                         #(#fields,)*

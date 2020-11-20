@@ -7,13 +7,13 @@ third_party {
   }
   url {
     type: ARCHIVE
-    value: "https://static.crates.io/crates/pin-project-internal/pin-project-internal-1.0.1.crate"
+    value: "https://static.crates.io/crates/pin-project-internal/pin-project-internal-1.0.2.crate"
   }
-  version: "1.0.1"
+  version: "1.0.2"
   license_type: NOTICE
   last_upgrade_date {
     year: 2020
-    month: 10
-    day: 26
+    month: 11
+    day: 18
   }
 }

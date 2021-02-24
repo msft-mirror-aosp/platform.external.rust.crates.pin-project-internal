@@ -18,16 +18,21 @@ rust_test_host {
     srcs: ["src/lib.rs"],
     test_suites: ["general-tests"],
     auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
     edition: "2018",
     rustlibs: [
         "libproc_macro2",
         "libquote",
         "libsyn",
     ],
+    proc_macros: ["librustversion"],
 }
 
 // dependent_library ["feature_list"]
 //   proc-macro2-1.0.24 "default,proc-macro"
-//   quote-1.0.7 "default,proc-macro"
-//   syn-1.0.48 "clone-impls,default,derive,full,parsing,printing,proc-macro,quote,visit-mut"
+//   quote-1.0.8 "default,proc-macro"
+//   rustversion-1.0.4
+//   syn-1.0.60 "clone-impls,default,derive,full,parsing,printing,proc-macro,quote,visit-mut"
 //   unicode-xid-0.2.1 "default"

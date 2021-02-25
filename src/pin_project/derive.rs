@@ -102,6 +102,7 @@ impl GenerateTokens {
 fn global_allowed_lints() -> TokenStream {
     quote! {
         #[allow(box_pointers)] // This lint warns use of the `Box` type.
+        #[allow(deprecated)]
         #[allow(explicit_outlives_requirements)] // https://github.com/rust-lang/rust/issues/60993
         #[allow(single_use_lifetimes)] // https://github.com/rust-lang/rust/issues/55058
         #[allow(unreachable_pub)] // This lint warns `pub` field in private struct.
@@ -133,6 +134,7 @@ fn proj_allowed_lints(kind: TypeKind) -> (TokenStream, TokenStream, TokenStream)
     let proj_ref = quote! {
         #global_allowed_lints
         #[allow(dead_code)] // This lint warns unused fields/variants.
+        #[allow(clippy::ref_option_ref)] // This lint warns `&Option<&<ty>>`.
         #[allow(clippy::type_repetition_in_bounds)] // https://github.com/rust-lang/rust-clippy/issues/4326
     };
     let proj_own = quote! {
@@ -390,7 +392,6 @@ fn parse_struct(
         #proj_ref_ident #proj_body
     };
     let proj_own_body = quote! {
-        let __self_ptr: *mut Self = self.get_unchecked_mut();
         let Self #proj_pat = &mut *__self_ptr;
         #proj_own_body
     };
@@ -472,7 +473,6 @@ fn parse_enum(
         }
     };
     let proj_own_body = quote! {
-        let __self_ptr: *mut Self = self.get_unchecked_mut();
         match &mut *__self_ptr {
             #proj_own_arms
         }
@@ -642,13 +642,6 @@ fn proj_own_body(
     quote! {
         // First, extract all the unpinned fields.
         let __result = #proj_own #proj_move;
-
-        // Destructors will run in reverse order, so next create a guard to overwrite
-        // `self` with the replacement value without calling destructors.
-        let __guard = ::pin_project::__private::UnsafeOverwriteGuard {
-            target: __self_ptr,
-            value: ::pin_project::__private::ManuallyDrop::new(__replacement),
-        };
 
         // Now create guards to drop all the pinned fields.
         //
@@ -961,6 +954,15 @@ fn make_proj_impl(
         quote! {
             #sig {
                 unsafe {
+                    let __self_ptr: *mut Self = self.get_unchecked_mut();
+
+                    // Destructors will run in reverse order, so next create a guard to overwrite
+                    // `self` with the replacement value without calling destructors.
+                    let __guard = ::pin_project::__private::UnsafeOverwriteGuard {
+                        target: __self_ptr,
+                        value: ::pin_project::__private::ManuallyDrop::new(__replacement),
+                    };
+
                     #proj_own_body
                 }
             }

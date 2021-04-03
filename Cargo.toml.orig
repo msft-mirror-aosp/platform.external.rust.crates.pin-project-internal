@@ -1,6 +1,6 @@
 [package]
 name = "pin-project-internal"
-version = "1.0.5"
+version = "1.0.6"
 authors = ["Taiki Endo <te316e89@gmail.com>"]
 edition = "2018"
 license = "Apache-2.0 OR MIT"
@@ -25,4 +25,3 @@ syn = { version = "1.0.56", features = ["full", "visit-mut"] }
 
 [dev-dependencies]
 pin-project = { path = ".." }
-rustversion = "1"

@@ -43,7 +43,7 @@ rust_proc_macro {
     name: "libpin_project_internal",
     crate_name: "pin_project_internal",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.0.8",
+    cargo_pkg_version: "1.0.10",
     srcs: ["src/lib.rs"],
     edition: "2018",
     rustlibs: [

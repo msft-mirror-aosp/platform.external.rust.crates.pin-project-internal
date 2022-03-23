@@ -28,7 +28,7 @@ pub(super) fn parse_args(attrs: &[Attribute]) -> Result<Args> {
     }
 
     if let Some(attr) = attrs.find("pin_project") {
-        bail!(attr, "duplicate #[pin_project] attribute");
+        return Err(error!(attr, "duplicate #[pin_project] attribute"));
     }
 
     let mut attrs = attrs.iter().filter(|attr| attr.path.is_ident(PIN));
@@ -37,7 +37,7 @@ pub(super) fn parse_args(attrs: &[Attribute]) -> Result<Args> {
         (attr, syn::parse2::<Input>(attr.tokens.clone()).unwrap().0)
     } else {
         // This only fails if another macro removes `#[pin]`.
-        bail!(TokenStream::new(), "#[pin_project] attribute has been removed");
+        return Err(error!(TokenStream::new(), "#[pin_project] attribute has been removed"));
     };
 
     if let Some(attr) = attrs.next() {
@@ -51,10 +51,11 @@ pub(super) fn parse_args(attrs: &[Attribute]) -> Result<Args> {
             (Some(_), _) => attr,
             (None, _) => prev_attr,
         };
-        bail!(span, "duplicate #[pin] attribute");
+        Err(error!(span, "duplicate #[pin] attribute"))
+    } else {
+        // This `unwrap` only fails if another macro removes `#[pin]` and inserts own `#[pin]`.
+        syn::parse2(prev.1.unwrap())
     }
-    // This `unwrap` only fails if another macro removes `#[pin]` and inserts own `#[pin]`.
-    syn::parse2(prev.1.unwrap())
 }
 
 pub(super) struct Args {
@@ -83,19 +84,20 @@ impl Parse for Args {
             has_prev: bool,
         ) -> Result<(Ident, TokenStream)> {
             if input.is_empty() {
-                bail!(name, "expected `{0} = <identifier>`, found `{0}`", name);
+                return Err(error!(name, "expected `{0} = <identifier>`, found `{0}`", name));
             }
             let eq_token: Token![=] = input.parse()?;
             if input.is_empty() {
                 let span = quote!(#name #eq_token);
-                bail!(span, "expected `{0} = <identifier>`, found `{0} =`", name);
+                return Err(error!(span, "expected `{0} = <identifier>`, found `{0} =`", name));
             }
             let value: Ident = input.parse()?;
             let span = quote!(#name #value);
             if has_prev {
-                bail!(span, "duplicate `{}` argument", name);
+                Err(error!(span, "duplicate `{}` argument", name))
+            } else {
+                Ok((value, span))
             }
-            Ok((value, span))
         }
 
         let mut pinned_drop = None;
@@ -110,24 +112,24 @@ impl Parse for Args {
             if input.peek(Token![!]) {
                 let bang: Token![!] = input.parse()?;
                 if input.is_empty() {
-                    bail!(bang, "expected `!Unpin`, found `!`");
+                    return Err(error!(bang, "expected `!Unpin`, found `!`"));
                 }
                 let unpin: kw::Unpin = input.parse()?;
                 let span = quote!(#bang #unpin);
                 if not_unpin.replace(span.span()).is_some() {
-                    bail!(span, "duplicate `!Unpin` argument");
+                    return Err(error!(span, "duplicate `!Unpin` argument"));
                 }
             } else {
                 let token = input.parse::<Ident>()?;
                 match &*token.to_string() {
                     "PinnedDrop" => {
                         if pinned_drop.replace(token.span()).is_some() {
-                            bail!(token, "duplicate `PinnedDrop` argument");
+                            return Err(error!(token, "duplicate `PinnedDrop` argument"));
                         }
                     }
                     "UnsafeUnpin" => {
                         if unsafe_unpin.replace(token.span()).is_some() {
-                            bail!(token, "duplicate `UnsafeUnpin` argument");
+                            return Err(error!(token, "duplicate `UnsafeUnpin` argument"));
                         }
                     }
                     "project" => {
@@ -143,18 +145,18 @@ impl Parse for Args {
                             project_replace_value = Some(value);
                             project_replace_span = Some(span.span());
                         } else if project_replace_span.is_some() {
-                            bail!(token, "duplicate `project_replace` argument");
+                            return Err(error!(token, "duplicate `project_replace` argument"));
                         } else {
                             project_replace_span = Some(token.span());
                         }
                     }
                     "Replace" => {
-                        bail!(
+                        return Err(error!(
                             token,
                             "`Replace` argument was removed, use `project_replace` argument instead"
-                        );
+                        ));
                     }
-                    _ => bail!(token, "unexpected argument: {}", token),
+                    _ => return Err(error!(token, "unexpected argument: {}", token)),
                 }
             }
 
@@ -166,17 +168,23 @@ impl Parse for Args {
 
         if project.is_some() || project_ref.is_some() {
             if project == project_ref {
-                bail!(
+                return Err(error!(
                     project_ref,
                     "name `{}` is already specified by `project` argument",
                     project_ref.as_ref().unwrap()
-                );
+                ));
             }
             if let Some(ident) = &project_replace_value {
                 if project == project_replace_value {
-                    bail!(ident, "name `{}` is already specified by `project` argument", ident);
+                    return Err(error!(
+                        ident,
+                        "name `{}` is already specified by `project` argument", ident
+                    ));
                 } else if project_ref == project_replace_value {
-                    bail!(ident, "name `{}` is already specified by `project_ref` argument", ident);
+                    return Err(error!(
+                        ident,
+                        "name `{}` is already specified by `project_ref` argument", ident
+                    ));
                 }
             }
         }
@@ -245,10 +253,6 @@ impl ProjReplace {
     }
 
     pub(super) fn ident(&self) -> Option<&Ident> {
-        if let Self::Named { ident, .. } = self {
-            Some(ident)
-        } else {
-            None
-        }
+        if let Self::Named { ident, .. } = self { Some(ident) } else { None }
     }
 }

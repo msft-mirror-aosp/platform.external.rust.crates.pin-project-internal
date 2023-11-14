@@ -718,6 +718,7 @@ fn make_unpin_impl(cx: &Context<'_>) -> TokenStream {
             // call-site span.
             let unsafety = <Token![unsafe]>::default();
             quote_spanned! { span =>
+                #[doc(hidden)]
                 impl #proj_impl_generics _pin_project::__private::Unpin
                     for #orig_ident #ty_generics
                 #proj_where_clause
@@ -944,6 +945,7 @@ fn make_proj_impl(
 
     let mut project = Some(quote! {
         #allow_dead_code
+        #[inline]
         #vis fn project<#lifetime>(
             self: _pin_project::__private::Pin<&#lifetime mut Self>,
         ) -> #proj_ident #proj_ty_generics {
@@ -955,6 +957,7 @@ fn make_proj_impl(
     let mut project_ref = Some(quote! {
         #allow_dead_code
         #[allow(clippy::missing_const_for_fn)]
+        #[inline]
         #vis fn project_ref<#lifetime>(
             self: _pin_project::__private::Pin<&#lifetime Self>,
         ) -> #proj_ref_ident #proj_ty_generics {
@@ -967,6 +970,7 @@ fn make_proj_impl(
         // It is enough to only set the span of the signature.
         let sig = quote_spanned! { span =>
             #allow_dead_code
+            #[inline]
             #vis fn project_replace(
                 self: _pin_project::__private::Pin<&mut Self>,
                 __replacement: Self,
